@@ -318,6 +318,9 @@ CREATE POLICY "Users can update their own settings"
 -- ==========================================
 
 -- Function to safely create or retrieve a direct conversation between two users
+-- PostgreSQL cannot change a function's return type via CREATE OR REPLACE.
+-- Drop the signature first so this migration also works with an earlier schema.
+DROP FUNCTION IF EXISTS public.create_direct_conversation(UUID);
 CREATE OR REPLACE FUNCTION public.create_direct_conversation(target_user_id UUID)
 RETURNS UUID AS $$
 DECLARE
