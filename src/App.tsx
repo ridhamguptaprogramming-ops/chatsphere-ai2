@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import { useAuthStore } from './stores/authStore';
 import { LoginPage } from './pages/LoginPage';
 import { ChatPage } from './pages/ChatPage';
@@ -93,6 +94,7 @@ export default function App() {
       </Routes>
 
       <ToastContainer />
+      <Analytics />
     </BrowserRouter>
   );
 }
