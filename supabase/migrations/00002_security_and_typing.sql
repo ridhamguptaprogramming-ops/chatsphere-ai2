@@ -14,6 +14,10 @@ CREATE INDEX IF NOT EXISTS idx_typing_indicators_conversation
 
 ALTER TABLE public.typing_indicators ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Members can view typing state" ON public.typing_indicators;
+DROP POLICY IF EXISTS "Users can create their own typing state" ON public.typing_indicators;
+DROP POLICY IF EXISTS "Users can update their own typing state" ON public.typing_indicators;
+DROP POLICY IF EXISTS "Users can remove their own typing state" ON public.typing_indicators;
 CREATE POLICY "Members can view typing state"
     ON public.typing_indicators FOR SELECT TO authenticated
     USING (EXISTS (
@@ -40,12 +44,14 @@ CREATE POLICY "Users can remove their own typing state"
 
 -- Do not let a browser client add arbitrary people to a conversation.
 DROP POLICY IF EXISTS "Users can insert members or be added to conversations" ON public.conversation_members;
+DROP POLICY IF EXISTS "Users can join only as themselves" ON public.conversation_members;
 CREATE POLICY "Users can join only as themselves"
     ON public.conversation_members FOR INSERT TO authenticated
     WITH CHECK (user_id = auth.uid());
 
 -- Preserve author and conversation identity when a message is edited.
 DROP POLICY IF EXISTS "Users can update (edit/soft delete) their own messages" ON public.messages;
+DROP POLICY IF EXISTS "Authors and group admins can update messages" ON public.messages;
 CREATE POLICY "Authors and group admins can update messages"
     ON public.messages FOR UPDATE TO authenticated
     USING (
@@ -108,6 +114,8 @@ GRANT EXECUTE ON FUNCTION public.create_group_conversation(TEXT, UUID[], TEXT, T
 -- Storage writes must be scoped to a folder named after the authenticated user.
 DROP POLICY IF EXISTS "Auth Upload Avatars" ON storage.objects;
 DROP POLICY IF EXISTS "Auth Upload Chat Media" ON storage.objects;
+DROP POLICY IF EXISTS "Users upload avatars to their own folder" ON storage.objects;
+DROP POLICY IF EXISTS "Users upload chat media to their own folder" ON storage.objects;
 CREATE POLICY "Users upload avatars to their own folder" ON storage.objects FOR INSERT TO authenticated
 WITH CHECK (bucket_id = 'avatars' AND (storage.foldername(name))[1] = auth.uid()::text);
 CREATE POLICY "Users upload chat media to their own folder" ON storage.objects FOR INSERT TO authenticated

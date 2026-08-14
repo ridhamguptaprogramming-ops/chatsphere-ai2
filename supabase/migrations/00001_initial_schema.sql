@@ -165,6 +165,8 @@ ALTER TABLE public.user_presence ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_settings ENABLE ROW LEVEL SECURITY;
 
 -- PROFILES POLICIES
+DROP POLICY IF EXISTS "Profiles are viewable by all authenticated users" ON public.profiles;
+DROP POLICY IF EXISTS "Users can update their own profile" ON public.profiles;
 CREATE POLICY "Profiles are viewable by all authenticated users"
     ON public.profiles FOR SELECT
     TO authenticated
@@ -176,6 +178,9 @@ CREATE POLICY "Users can update their own profile"
     USING (auth.uid() = id);
 
 -- CONVERSATIONS POLICIES
+DROP POLICY IF EXISTS "Users can view conversations they belong to" ON public.conversations;
+DROP POLICY IF EXISTS "Users can create conversations" ON public.conversations;
+DROP POLICY IF EXISTS "Admins or owners can update group conversations" ON public.conversations;
 CREATE POLICY "Users can view conversations they belong to"
     ON public.conversations FOR SELECT
     TO authenticated
@@ -205,6 +210,10 @@ CREATE POLICY "Admins or owners can update group conversations"
     );
 
 -- CONVERSATION MEMBERS POLICIES
+DROP POLICY IF EXISTS "Members can view conversation participants" ON public.conversation_members;
+DROP POLICY IF EXISTS "Users can insert members or be added to conversations" ON public.conversation_members;
+DROP POLICY IF EXISTS "Users can update their own membership settings" ON public.conversation_members;
+DROP POLICY IF EXISTS "Admins can delete members" ON public.conversation_members;
 CREATE POLICY "Members can view conversation participants"
     ON public.conversation_members FOR SELECT
     TO authenticated
@@ -240,6 +249,9 @@ CREATE POLICY "Admins can delete members"
     );
 
 -- MESSAGES POLICIES
+DROP POLICY IF EXISTS "Users can view messages in their conversations" ON public.messages;
+DROP POLICY IF EXISTS "Users can insert messages into their conversations as themselves" ON public.messages;
+DROP POLICY IF EXISTS "Users can update (edit/soft delete) their own messages" ON public.messages;
 CREATE POLICY "Users can view messages in their conversations"
     ON public.messages FOR SELECT
     TO authenticated
@@ -269,6 +281,9 @@ CREATE POLICY "Users can update (edit/soft delete) their own messages"
     USING (sender_id = auth.uid());
 
 -- MESSAGE REACTIONS POLICIES
+DROP POLICY IF EXISTS "Users can view reactions in their conversations" ON public.message_reactions;
+DROP POLICY IF EXISTS "Users can insert their own reactions" ON public.message_reactions;
+DROP POLICY IF EXISTS "Users can delete their own reactions" ON public.message_reactions;
 CREATE POLICY "Users can view reactions in their conversations"
     ON public.message_reactions FOR SELECT
     TO authenticated
@@ -292,6 +307,8 @@ CREATE POLICY "Users can delete their own reactions"
     USING (user_id = auth.uid());
 
 -- USER PRESENCE POLICIES
+DROP POLICY IF EXISTS "Presence is viewable by all authenticated users" ON public.user_presence;
+DROP POLICY IF EXISTS "Users can update their own presence" ON public.user_presence;
 CREATE POLICY "Presence is viewable by all authenticated users"
     ON public.user_presence FOR SELECT
     TO authenticated
@@ -303,6 +320,8 @@ CREATE POLICY "Users can update their own presence"
     USING (user_id = auth.uid());
 
 -- USER SETTINGS POLICIES
+DROP POLICY IF EXISTS "Users can view their own settings" ON public.user_settings;
+DROP POLICY IF EXISTS "Users can update their own settings" ON public.user_settings;
 CREATE POLICY "Users can view their own settings"
     ON public.user_settings FOR SELECT
     TO authenticated
@@ -383,6 +402,10 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- STORAGE POLICIES
+DROP POLICY IF EXISTS "Public Read Avatars" ON storage.objects;
+DROP POLICY IF EXISTS "Auth Upload Avatars" ON storage.objects;
+DROP POLICY IF EXISTS "Auth Read Chat Media" ON storage.objects;
+DROP POLICY IF EXISTS "Auth Upload Chat Media" ON storage.objects;
 CREATE POLICY "Public Read Avatars" ON storage.objects FOR SELECT USING (bucket_id = 'avatars');
 CREATE POLICY "Auth Upload Avatars" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'avatars');
 CREATE POLICY "Auth Read Chat Media" ON storage.objects FOR SELECT TO authenticated USING (bucket_id IN ('chat-media', 'documents'));
