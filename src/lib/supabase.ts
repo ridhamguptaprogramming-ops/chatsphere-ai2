@@ -26,7 +26,8 @@ export const supabase = createClient(
     auth: {
       persistSession: true,
       autoRefreshToken: true,
-      detectSessionInUrl: true,
+      // The public /auth/callback route exchanges OAuth's PKCE code explicitly.
+      detectSessionInUrl: false,
     },
     realtime: {
       params: {

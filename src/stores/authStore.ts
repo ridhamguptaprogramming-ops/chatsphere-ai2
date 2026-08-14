@@ -2,6 +2,9 @@ import { create } from 'zustand';
 import { CURRENT_MOCK_USER } from '../data/mockData';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { Profile, UserSettings } from '../types/chat';
+import type { Session } from '@supabase/supabase-js';
+
+let authSubscriptionStarted = false;
 
 interface AuthStore {
   user: Profile | null;
@@ -28,6 +31,31 @@ const DEFAULT_SETTINGS: UserSettings = {
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
 };
+
+async function loadAuthenticatedUser(session: Session): Promise<{ user: Profile; settings: UserSettings }> {
+  // The database trigger normally creates this record. The RPC covers accounts
+  // created before that trigger was installed or when its first run failed.
+  const { error: profileError } = await supabase.rpc('ensure_current_profile');
+  if (profileError && profileError.code !== 'PGRST202') throw profileError;
+
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', session.user.id)
+    .single();
+  if (error || !profile) throw error || new Error('Your profile could not be created.');
+
+  const { data: settings } = await supabase
+    .from('user_settings')
+    .select('*')
+    .eq('user_id', session.user.id)
+    .maybeSingle();
+
+  return {
+    user: profile as Profile,
+    settings: settings ? (settings as UserSettings) : { ...DEFAULT_SETTINGS, user_id: session.user.id },
+  };
+}
 
 export const useAuthStore = create<AuthStore>((set, get) => ({
   user: null,
@@ -58,57 +86,34 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       return;
     }
 
+    if (!authSubscriptionStarted) {
+      authSubscriptionStarted = true;
+      supabase.auth.onAuthStateChange(async (event, session) => {
+        if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.user) {
+          try {
+            const authenticated = await loadAuthenticatedUser(session);
+            set({ ...authenticated, isDemoMode: false, isLoading: false });
+          } catch (err) {
+            console.error('Error loading authenticated profile:', err);
+            set({ user: null, isDemoMode: false, isLoading: false });
+          }
+        } else if (event === 'SIGNED_OUT') {
+          set({ user: null, isLoading: false });
+        }
+      });
+    }
+
     try {
       const { data: { session } } = await supabase.auth.getSession();
-
-      if (session?.user) {
-        // Fetch real Supabase profile
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-
-        const { data: userSettings } = await supabase
-          .from('user_settings')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .single();
-
-        if (profile) {
-          set({
-            user: profile as Profile,
-            settings: userSettings ? (userSettings as UserSettings) : { ...DEFAULT_SETTINGS, user_id: session.user.id },
-            isDemoMode: false,
-            isLoading: false,
-          });
-          return;
-        }
+      if (!session) {
+        set({ user: null, isDemoMode: false, isLoading: false });
+        return;
       }
-
-      set({ user: null, isDemoMode: false, isLoading: false });
+      const authenticated = await loadAuthenticatedUser(session);
+      set({ ...authenticated, isDemoMode: false, isLoading: false });
     } catch (err) {
       console.error('Error initializing auth:', err);
       set({ user: null, isDemoMode: false, isLoading: false });
-    }
-
-    // Subscribe to auth state changes
-    if (isSupabaseConfigured()) {
-      supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_IN' && session?.user) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-
-          if (profile) {
-            set({ user: profile as Profile });
-          }
-        } else if (event === 'SIGNED_OUT') {
-          set({ user: null });
-        }
-      });
     }
   },
 
@@ -121,7 +126,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/chat`,
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
 
