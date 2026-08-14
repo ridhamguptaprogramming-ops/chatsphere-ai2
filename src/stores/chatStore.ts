@@ -1,8 +1,12 @@
 import { create } from 'zustand';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 import { chatService } from '../services/chatService';
 import { Conversation, Message, Profile, TypingIndicator } from '../types/chat';
 import { useAuthStore } from './authStore';
+
+let activeRealtimeChannel: RealtimeChannel | null = null;
+let lastTypingSignalAt = 0;
 
 interface ChatStore {
   conversations: Conversation[];
@@ -248,8 +252,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const user = useAuthStore.getState().user;
     if (!activeConversationId || !user || !isSupabaseConfigured()) return;
 
-    const channel = supabase.channel(`typing_${activeConversationId}`);
-    channel.send({
+    if (!activeRealtimeChannel || activeRealtimeChannel.topic !== `realtime:chat_room_${activeConversationId}`) return;
+    const now = Date.now();
+    if (isTyping && now - lastTypingSignalAt < 600) return;
+    lastTypingSignalAt = now;
+    activeRealtimeChannel.send({
       type: 'broadcast',
       event: 'typing',
       payload: { conversation_id: activeConversationId, user, is_typing: isTyping },
@@ -311,7 +318,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       })
       .subscribe();
 
+    activeRealtimeChannel = channel;
+
     return () => {
+      if (activeRealtimeChannel === channel) activeRealtimeChannel = null;
       supabase.removeChannel(channel);
     };
   },

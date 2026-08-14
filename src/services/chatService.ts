@@ -188,35 +188,25 @@ class ChatService {
       return newGroup;
     }
 
-    // Insert conversation row
-    const { data: conv, error: convErr } = await supabase
-      .from('conversations')
-      .insert({
-        type: 'group',
-        name,
-        description,
-        avatar_url: avatarUrl,
-        created_by: currentUserId,
-      })
-      .select()
-      .single();
+    const { data: conversationId, error } = await supabase.rpc('create_group_conversation', {
+      group_name: name,
+      member_ids: memberUserIds,
+      group_description: description || null,
+      group_avatar_url: avatarUrl || null,
+    });
+    if (error) throw error;
 
-    if (convErr) throw convErr;
-
-    // Add members
-    const membersToInsert = [
-      { conversation_id: conv.id, user_id: currentUserId, role: 'owner' },
-      ...memberUserIds.map((uid) => ({
-        conversation_id: conv.id,
-        user_id: uid,
-        role: 'member',
-      })),
-    ];
-
-    const { error: memErr } = await supabase.from('conversation_members').insert(membersToInsert);
-    if (memErr) throw memErr;
-
-    return conv as Conversation;
+    const conversations = await this.getConversations(currentUserId);
+    return conversations.find((conversation) => conversation.id === conversationId) || {
+      id: conversationId,
+      type: 'group',
+      name,
+      description,
+      avatar_url: avatarUrl,
+      created_by: currentUserId,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
   }
 
   // --- MESSAGES ---

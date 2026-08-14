@@ -21,9 +21,14 @@ class StorageService {
       };
     }
 
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      throw new Error('You must be signed in to upload files.');
+    }
+
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
-    const filePath = `${fileName}`;
+    const filePath = `${user.id}/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
       .from(bucket)
@@ -32,14 +37,7 @@ class StorageService {
         upsert: false,
       });
 
-    if (uploadError) {
-      console.warn(`Supabase storage upload failed for bucket ${bucket}, falling back to local Object URL:`, uploadError);
-      return {
-        url: URL.createObjectURL(file),
-        name: file.name,
-        size: file.size,
-      };
-    }
+    if (uploadError) throw uploadError;
 
     const { data: { publicUrl } } = supabase.storage
       .from(bucket)
