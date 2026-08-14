@@ -1,0 +1,236 @@
+import { Conversation, Message, Profile } from '../types/chat';
+
+export const CURRENT_MOCK_USER: Profile = {
+  id: 'usr_current_me',
+  username: 'ridham_g',
+  full_name: 'Ridham Gupta',
+  avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+  bio: 'Building ChatFlow with React & Supabase 🚀',
+  status_text: 'Online & Coding',
+  is_online: true,
+  last_seen: new Date().toISOString(),
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+};
+
+export const INITIAL_MOCK_PROFILES: Profile[] = [
+  CURRENT_MOCK_USER,
+  {
+    id: 'usr_aman',
+    username: 'aman_v',
+    full_name: 'Aman Verma',
+    avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    bio: 'Frontend enthusiast | Coffee lover ☕',
+    status_text: 'In a meeting',
+    is_online: true,
+    last_seen: new Date().toISOString(),
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'usr_sarah',
+    username: 'sarah_m',
+    full_name: 'Sarah Chen',
+    avatar_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
+    bio: 'Product Designer @ DesignCo ✨',
+    status_text: 'Working on ChatFlow UI',
+    is_online: false,
+    last_seen: new Date(Date.now() - 1000 * 60 * 25).toISOString(),
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'usr_alex',
+    username: 'alex_k',
+    full_name: 'Alex Kumar',
+    avatar_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
+    bio: 'DevOps & Cloud Architect ☁️',
+    status_text: 'Available',
+    is_online: true,
+    last_seen: new Date().toISOString(),
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'usr_priya',
+    username: 'priya_s',
+    full_name: 'Priya Sharma',
+    avatar_url: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&auto=format&fit=crop&q=80',
+    bio: 'Mobile App Developer 📱',
+    status_text: 'At the gym 🏋️‍♂️',
+    is_online: false,
+    last_seen: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+];
+
+export const INITIAL_MOCK_MESSAGES: Record<string, Message[]> = {
+  conv_1: [
+    {
+      id: 'msg_101',
+      conversation_id: 'conv_1',
+      sender_id: 'usr_aman',
+      content: 'Hey Ridham! Are you coming for the project demo tomorrow?',
+      message_type: 'text',
+      is_edited: false,
+      created_at: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
+      sender: INITIAL_MOCK_PROFILES[1],
+      reactions: [{ id: 'rx_1', message_id: 'msg_101', user_id: 'usr_current_me', reaction: '👍', created_at: new Date().toISOString() }]
+    },
+    {
+      id: 'msg_102',
+      conversation_id: 'conv_1',
+      sender_id: 'usr_current_me',
+      content: 'Yes! The ChatFlow UI and Supabase real-time sync are working super smoothly. I will present at 10:30 AM.',
+      message_type: 'text',
+      is_edited: false,
+      created_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+      sender: CURRENT_MOCK_USER,
+    },
+    {
+      id: 'msg_103',
+      conversation_id: 'conv_1',
+      sender_id: 'usr_aman',
+      content: 'Awesome! Check out the mock design screenshot I drafted.',
+      message_type: 'image',
+      attachment_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80',
+      attachment_name: 'dashboard_preview.png',
+      attachment_size: 1024 * 450,
+      is_edited: false,
+      created_at: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
+      sender: INITIAL_MOCK_PROFILES[1],
+      reactions: [{ id: 'rx_2', message_id: 'msg_103', user_id: 'usr_current_me', reaction: '🔥', created_at: new Date().toISOString() }]
+    },
+    {
+      id: 'msg_104',
+      conversation_id: 'conv_1',
+      sender_id: 'usr_aman',
+      content: 'Hey, are you coming tomorrow?',
+      message_type: 'text',
+      is_edited: false,
+      created_at: new Date(Date.now() - 1000 * 60 * 2).toISOString(),
+      sender: INITIAL_MOCK_PROFILES[1],
+    }
+  ],
+  conv_2: [
+    {
+      id: 'msg_201',
+      conversation_id: 'conv_2',
+      sender_id: 'usr_sarah',
+      content: 'Hi Ridham! I reviewed the dark theme color palette with #FF7A00 orange accents.',
+      message_type: 'text',
+      is_edited: false,
+      created_at: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
+      sender: INITIAL_MOCK_PROFILES[2],
+    },
+    {
+      id: 'msg_202',
+      conversation_id: 'conv_2',
+      sender_id: 'usr_current_me',
+      content: 'Looks super sleek! The contrast ratio is WCAG AA compliant as well.',
+      message_type: 'text',
+      is_edited: false,
+      created_at: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
+      sender: CURRENT_MOCK_USER,
+    },
+  ],
+  conv_3: [
+    {
+      id: 'msg_301',
+      conversation_id: 'conv_3',
+      sender_id: 'usr_alex',
+      content: 'Welcome everyone to the Tech Squad group! 🚀',
+      message_type: 'system',
+      is_edited: false,
+      created_at: new Date(Date.now() - 1000 * 60 * 300).toISOString(),
+    },
+    {
+      id: 'msg_302',
+      conversation_id: 'conv_3',
+      sender_id: 'usr_alex',
+      content: 'Let’s use this channel to discuss release updates and database schemas.',
+      message_type: 'text',
+      is_edited: false,
+      created_at: new Date(Date.now() - 1000 * 60 * 250).toISOString(),
+      sender: INITIAL_MOCK_PROFILES[3],
+    },
+  ],
+};
+
+export const INITIAL_MOCK_CONVERSATIONS: Conversation[] = [
+  {
+    id: 'conv_1',
+    type: 'direct',
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+    updated_at: new Date(Date.now() - 1000 * 60 * 2).toISOString(),
+    other_user: INITIAL_MOCK_PROFILES[1], // Aman
+    last_message: INITIAL_MOCK_MESSAGES.conv_1[INITIAL_MOCK_MESSAGES.conv_1.length - 1],
+    unread_count: 3,
+    is_pinned: true,
+    is_archived: false,
+    is_muted: false,
+  },
+  {
+    id: 'conv_2',
+    type: 'direct',
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
+    updated_at: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
+    other_user: INITIAL_MOCK_PROFILES[2], // Sarah
+    last_message: INITIAL_MOCK_MESSAGES.conv_2[INITIAL_MOCK_MESSAGES.conv_2.length - 1],
+    unread_count: 0,
+    is_pinned: false,
+    is_archived: false,
+    is_muted: false,
+  },
+  {
+    id: 'conv_3',
+    type: 'group',
+    name: 'Tech Squad ⚡',
+    avatar_url: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=150&auto=format&fit=crop&q=80',
+    description: 'Engineering team chat for release planning',
+    created_by: 'usr_alex',
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 72).toISOString(),
+    updated_at: new Date(Date.now() - 1000 * 60 * 250).toISOString(),
+    last_message: INITIAL_MOCK_MESSAGES.conv_3[INITIAL_MOCK_MESSAGES.conv_3.length - 1],
+    unread_count: 0,
+    is_pinned: false,
+    is_archived: false,
+    is_muted: true,
+    members: [
+      {
+        id: 'cm_1',
+        conversation_id: 'conv_3',
+        user_id: 'usr_current_me',
+        role: 'member',
+        joined_at: new Date().toISOString(),
+        last_read_at: new Date().toISOString(),
+        is_muted: true,
+        is_archived: false,
+        profile: CURRENT_MOCK_USER
+      },
+      {
+        id: 'cm_2',
+        conversation_id: 'conv_3',
+        user_id: 'usr_alex',
+        role: 'owner',
+        joined_at: new Date().toISOString(),
+        last_read_at: new Date().toISOString(),
+        is_muted: false,
+        is_archived: false,
+        profile: INITIAL_MOCK_PROFILES[3]
+      },
+      {
+        id: 'cm_3',
+        conversation_id: 'conv_3',
+        user_id: 'usr_aman',
+        role: 'admin',
+        joined_at: new Date().toISOString(),
+        last_read_at: new Date().toISOString(),
+        is_muted: false,
+        is_archived: false,
+        profile: INITIAL_MOCK_PROFILES[1]
+      }
+    ]
+  }
+];

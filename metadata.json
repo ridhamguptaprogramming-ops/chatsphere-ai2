@@ -1,0 +1,6 @@
+{
+  "name": "ChatFlow",
+  "description": "A WhatsApp-style real-time web messaging platform with Supabase backend, Google Auth, group chats, typing indicators, and media sharing.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
